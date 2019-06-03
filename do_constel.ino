@@ -92,13 +92,15 @@ void do_constel()
     {
       if (clear)                // clear full display
       {
-	clear_displ();
-	clear=false;
+        clear_displ();
+        clear=false;
       }
+      str2oled(0,15,"Version=%s",VERSION);
+      str2oled(0,13,"%s",COPYRIGHT);
       str2oled(1,7,"o=%d   ",calxy.xyoffset);
       str2oled(1,5,"s=%f   ",calxy.xyslope);
-      str2oled(1,3,"xymi=%d  ",calxy.xymin);
-      str2oled(1,1,"xyma=%d  ",calxy.xymax);
+      str2oled(1,3,"xymin=%d  ",calxy.xymin);
+      str2oled(1,1,"xyman=%d  ",calxy.xymax);
     }
     else
     {
@@ -107,14 +109,6 @@ void do_constel()
   }
 
   do_calibrate(&calxy);       // size constellation to screen
-
-  // skip drawing if out-of-range
-  if ((calxy.x<0) || (calxy.x >= XY_SIZE)) return;
-  if ((calxy.y<0) || (calxy.y >= XY_SIZE)) return;
-
-  // clip; not needed if 'skip drawing if out-of-range' is done
-  calxy.x=clip(calxy.x);
-  calxy.y=clip(calxy.y);
 
   // only show constel. diagram if calibration data not shown.
   if (!show_cal)

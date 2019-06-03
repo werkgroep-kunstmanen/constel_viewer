@@ -134,14 +134,17 @@ void coll_pix2oled(CALIBRATE *calxy,int integrlen,int incval,int rgb)
   x/=DDSARR;
   y/=DDSARR;
 
-  // pointer to mem for pos. (x,y)
-  p=xyarr+y*SARR+x;
+  if ((x>=0) && (x<SARR) && (y>=0) && (y<SARR))
+  {
+    // pointer to mem for pos. (x,y)
+    p=xyarr+y*SARR+x;
 
-  // increment pos. (x,y), clip to XY_SIZE
-  if (*p >= (LUM_MAX-incval))
-    *p=LUM_MAX;
-  else
-    (*p)+=incval;
+    // increment pos. (x,y), clip to XY_SIZE
+    if (*p >= (LUM_MAX-incval))
+      *p=LUM_MAX;
+    else
+      (*p)+=incval;
+  }
 
   integr++;
 

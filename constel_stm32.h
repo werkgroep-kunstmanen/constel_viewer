@@ -7,9 +7,12 @@
 #ifndef CONSTEL_STM32_HDR
 #define CONSTEL_STM32_HDR
 
+#define VERSION "2019.1"
+#define COPYRIGHT "@ wg Kunstmanen"
+
 // Fixed calibration parameters
-#define FIXED_xyoffset -1680
-#define FIXED_xyslope  0.06
+#define FIXED_xyoffset -1850
+#define FIXED_xyslope  0.07
 
 // Add main() if not compiled with Arduino
 #define USE_ARDUINO 1
