@@ -7,8 +7,7 @@
 #ifndef CONSTEL_STM32_HDR
 #define CONSTEL_STM32_HDR
 
-#define VERSION "2019.1"
-#define COPYRIGHT "@ wg Kunstmanen"
+#define VERSION "2020.1"
 
 // Fixed calibration parameters
 #define FIXED_xyoffset -1850
@@ -25,7 +24,8 @@
 // Other pins STM32
 #define TEST0 PB12          // use cal. 'FIXED_xyoffset/FIXED_xyslope'
 #define TEST1 PB13          // fix calibration
-#define TEST2 PB14          // 
+#define TEST2 PB14          // show numeric cal. values
+#define OVERL PB15
 #define RGB_R PA8
 #define RGB_G PA9
 #define RGB_B PA10
@@ -34,7 +34,7 @@
 // Values OLED
 #define INCVAL 2            // increment val. of OLED pixel (
 #define XY_SIZE 128         // width/height display
-#define LUM_MAX 31          // max. lum. display
+#define LUM_MAX 63          // max. lum. display
 
 #define MIN(a,b) ((a) < (b)? (a) : (b))
 #define MAX(a,b) ((a) > (b)? (a) : (b))
