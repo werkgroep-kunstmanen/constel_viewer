@@ -5,10 +5,7 @@
  *
  ****************************************************/
 #include <malloc.h>
-
-#ifndef CONSTEL_STM32_HDR
 #include "constel_stm32.h"
-#endif
 
 // Clip to max. OLED resolution
 int clip(int n)
@@ -70,56 +67,74 @@ bool calc_cal_xy(CALIBRATE *calxy,bool freeze_cal)
 #define SARR 64                    // size mem: SARR x SARR (max. 128)
 #define DDSARR (XY_SIZE/SARR)      // size dot
 
+// Add overlay: cross
+// Add other overlays here!
+static void add_overlay(int x,int y,unsigned char *r,unsigned char *g,unsigned char *b)
+{
+  if ((x==SARR/2) || (y==SARR/2)) 
+  {
+    *r=0x1f; // range=0..0x1f
+    *g=0x00; // range=0..0x3f
+    *b=0x00; // range=0..0x1f
+  }
+}
+
 // Pixel at (x,y)
 // integrlen=# integration steps
 // incval = slope integration
 // note: LUMMAX reached after LUMMAX/incval steps.
 
 // Copy content xyarr to OLED
-static void xyarr2oled(unsigned char *xyarr,int rgb)
+// format: 2-bytes:
+//   LSByte: word[0]=bbbbbggg
+//   MSByte: word[1]=gggrrrrr
+static void xyarr2oled(unsigned char *xyarr,int rgb,int add_overl)
 {
   int xx,yy,xxx,yyy;
   unsigned char *p;
   char www[DDSARR*2];
   unsigned char word[2],r,g,b,lum;
   
-  write_cmdbyt2(0x15,0,XY_SIZE-1);               // set OLED start/end X
-  write_cmdbyt2(0x75,0,XY_SIZE-1);               // set OLED start/end Y
-  write_cmd(0x5C);                               //
-  digitalWrite(SPI1_NSS_PIN, LOW);               // set CSN active for SPI transm.
+  write_cmdbyt2(0x15,0,XY_SIZE-1);             // set OLED start/end X
+  write_cmdbyt2(0x75,0,XY_SIZE-1);             // set OLED start/end Y
+  write_cmd(0x5C);                             //
+  digitalWrite(SPI1_NSS_PIN, LOW);             // set CSN active for SPI transm.
 
-  for (yy=0; yy<SARR; yy++)                      // mem Y dir.
+  for (yy=0; yy<SARR; yy++)                    // mem Y dir.
   {
-    for (yyy=0; yyy<DDSARR; yyy++)               // # y per dot; repeat or DDSARR lines
+    for (yyy=0; yyy<DDSARR; yyy++)             // # y per dot; repeat or DDSARR lines
     {
-      for (xx=0; xx<SARR; xx++)                  // mem X dir.; one line
+      for (xx=0; xx<SARR; xx++)                // mem X dir.; one line
       {  
-        p=xyarr+yy*SARR+xx;                      // get value from mem
+        p=xyarr+yy*SARR+xx;                    // get value from mem
         lum=*p;
 
-        r=lum>>1;                                // red   value: 0...15 (lum: 0...31)
-        g=lum>>0;                                // green value: 0...31
-        b=lum>>1;                                // blue  value: 0...15
+        r=lum>>1;                              // red   value: 0...31 (lum: 0...63)
+        g=lum>>0;                              // green value: 0...63
+        b=lum>>1;                              // blue  value: 0...31
         if (!(rgb&4)) r=0;
         if (!(rgb&2)) g=0;
         if (!(rgb&1)) b=0;
-        word[0]=((b<<3)&0xf8) + ((g>>3)&0x0f);   // set LSByte word
-        word[1]=((g<<5)&0xe0) + ((r&0x1f));      // set MSByte word
 
-        for (xxx=0; xxx<DDSARR; xxx++)           // copy lum for one dot-line in array
+        if (add_overl) add_overlay(xx,yy,&r,&g,&b);
+        
+        word[0]=((b<<3)&0xf8) + ((g>>3)&0x07); // set LSByte word
+        word[1]=((g<<5)&0xe0) + ((r&0x1f));    // set MSByte word
+
+        for (xxx=0; xxx<DDSARR; xxx++)         // copy lum for one dot-line in array
         {
           www[xxx*2]=word[0];
           www[xxx*2+1]=word[1];
         }
-        SPI.write(www,DDSARR*2);                 // transmit 1 line of 1 dot to OLED
+        SPI.write(www,DDSARR*2);               // transmit 1 line of 1 dot to OLED
       }
     }
   }
-  digitalWrite(SPI1_NSS_PIN, HIGH);              // set CSN inactive for SPI transm.
+  digitalWrite(SPI1_NSS_PIN, HIGH);            // set CSN inactive for SPI transm.
 }
 
 // Collect/integrate pixels (pixel at calxy->x, calxy->y) and write to OLED after integration
-void coll_pix2oled(CALIBRATE *calxy,int integrlen,int incval,int rgb)
+void coll_pix2oled(CALIBRATE *calxy,int integrlen,int incval,int rgb,int add_overl)
 {
   static unsigned char *xyarr,*p;
   static int integr;
@@ -151,10 +166,9 @@ void coll_pix2oled(CALIBRATE *calxy,int integrlen,int incval,int rgb)
   // write mem to display afer integration time
   if (integr>=integrlen)
   {
-    xyarr2oled(xyarr,rgb);
-   // reset integration and array
+    xyarr2oled(xyarr,rgb,add_overl);
+    // reset integration and array
     integr=0;
-    memset(xyarr,0,SARR*SARR);                     // reset array for next integration
+    memset(xyarr,0,SARR*SARR);                 // reset array for next integration
   }
 }
-
