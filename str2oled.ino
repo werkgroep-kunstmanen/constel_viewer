@@ -110,12 +110,12 @@ void clear_displ(void)
   int n;
   unsigned char wrd[2];
   wrd[0]=wrd[1]=0x00;  
-  write_cmdbyt2(0x15,0,127);                  // set OLED start/end X
-  write_cmdbyt2(0x75,0,127);                  // set OLED start/end Y
+  write_cmdbyt2(0x15,0,127);                   // set OLED start/end X
+  write_cmdbyt2(0x75,0,127);                   // set OLED start/end Y
   write_cmd(0x5C);            
-  digitalWrite(SPI1_NSS_PIN, LOW);               // set CSN active for SPI transm.
+  digitalWrite(SPI1_NSS_PIN, LOW);             // set CSN active for SPI transm.
   for (n=0; n<16384; n++) SPI.write(wrd,2);
-  digitalWrite(SPI1_NSS_PIN, HIGH);              // set CSN inactive for SPI transm.
+  digitalWrite(SPI1_NSS_PIN, HIGH);            // set CSN inactive for SPI transm.
 }
 
 // convert ASCII string into pixels to set at line 'y'
@@ -134,18 +134,34 @@ static void get_strline(char *s,int y,char *l,int slen)
   }
 }
 
+//   LSByte: word[0]=bbbbbggg
+//   MSByte: word[1]=gggrrrrr
+
+static int *rgb2wrd(int rgb)
+{
+  static int word[2];
+  int r,g,b;
+  r=(rgb&0xf00)>>7; if (r>1) r|=0x01;
+  g=(rgb&0x0f0)>>2; if (g>3) g|=0x03;
+  b=(rgb&0x00f)<<1; if (b>1) b|=0x01;
+  word[0]=((b<<3)&0xf8) + ((g>>3)&0x07);       // set LSByte word
+  word[1]=((g<<5)&0xe0) + ((r&0x1f));          // set MSByte word
+  return word;
+}
+
 // Add string 'str' at pos. (x,y) on display
-static void add_str2arr(int x,int y,char *str,int flip)
+static void add_str2arr(int x,int y,int rgb,char *str,int flip)
 {
   char ts[150];
   int fsize,ytxt,i,y0;
   int xstr,ystr;
   int chnkpos;
+  int *word;
   char line[128*2];
   fsize=1;
   xstr=strlen(str)*8*fsize;
   ystr=8*fsize;
-
+  word=rgb2wrd(rgb);
   for (y0=0; y0<ystr; y0++)
   {
     int y1=y0;
@@ -158,32 +174,32 @@ static void add_str2arr(int x,int y,char *str,int flip)
       if (flip) i1=xstr-1-i;
       if (ts[i1/fsize])
       {
-        line[i*2]=0xff;
-        line[i*2+1]=0xff;
+        line[i*2]  = word[0];//0xff;           // max. white
+        line[i*2+1]= word[1];//0xff;
       }
       else
       {
-        line[i*2]=0x00;
+        line[i*2]=0x00;                        // black
         line[i*2+1]=0x00;
       }
     }
-    write_cmdbyt2(0x15,x,x+xstr);                  // set OLED start/end X
-    write_cmdbyt2(0x75,y+y0,y+y0);                  // set OLED start/end Y
-    write_cmd(0x5C);                               //
-    digitalWrite(SPI1_NSS_PIN, LOW);               // set CSN active for SPI transm.
-    SPI.write(line,xstr*2);                 // transmit 1 line of 1 dot to OLED 
-    digitalWrite(SPI1_NSS_PIN, HIGH);              // set CSN inactive for SPI transm.
+    write_cmdbyt2(0x15,x,x+xstr);              // set OLED start/end X               
+    write_cmdbyt2(0x75,y+y0,y+y0);             // set OLED start/end Y               
+    write_cmd(0x5C);                           //                                    
+    digitalWrite(SPI1_NSS_PIN, LOW);           // set CSN active for SPI transm.     
+    SPI.write(line,xstr*2);                    // transmit 1 line of 1 dot to OLED    
+    digitalWrite(SPI1_NSS_PIN, HIGH);          // set CSN inactive for SPI transm.   
   }
 }
 
 #include <stdarg.h>
 // Create string from input format and copy to display
-void str2oled(int x, int y,char *frmt,...)
+void str2oled(int x, int y,int rgb,char *frmt,...)
 {
   char xstr[20];
   va_list ap;
   va_start(ap,frmt);
   vsnprintf(xstr,16,frmt,ap);
   
-  add_str2arr(x*8,y*8,xstr,0); 
+  add_str2arr(x*8,y*8,rgb,xstr,0); 
 }
