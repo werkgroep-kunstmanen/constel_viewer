@@ -4,6 +4,7 @@
  *   Add text
  *
  ****************************************************/
+#define UPSIDE_DOWN false
 /*************************************
  * ASCII bitmap for draw_rgbstring
  *************************************/
@@ -150,7 +151,7 @@ static int *rgb2wrd(int rgb)
 }
 
 // Add string 'str' at pos. (x,y) on display
-static void add_str2arr(int x,int y,int rgb,char *str,int flip)
+static void add_str2arr(int x,int y,int rgb,char *str,bool flip)
 {
   char ts[150];
   int fsize,ytxt,i,y0;
@@ -201,5 +202,5 @@ void str2oled(int x, int y,int rgb,char *frmt,...)
   va_start(ap,frmt);
   vsnprintf(xstr,16,frmt,ap);
   
-  add_str2arr(x*8,y*8,rgb,xstr,0); 
+  add_str2arr(x*8,y*8,rgb,xstr,UPSIDE_DOWN); 
 }
