@@ -90,6 +90,9 @@
  
       PB14	1: show constellation diagram
       		0: show scaling parameters
+
+      PB15	1: don't add overlay
+      		0: add overlay (cross) to constellation diagram
  
       PA8	0: red off
       PA9	0: green off
