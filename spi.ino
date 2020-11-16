@@ -4,9 +4,7 @@
  *   Setup SPI for driving OLED; 4.5 Mb/s
  *
  ****************************************************/
-#ifndef CONSTEL_STM32_HDR
 #include "constel_stm32.h"
-#endif
 
 #include <SPI.h>                        // in here: extern SPIClass SPI;
 void setup_spi()

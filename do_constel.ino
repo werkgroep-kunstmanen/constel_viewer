@@ -4,13 +4,10 @@
  *   Loop-function 
  *
  ****************************************************/
+#include "constel_stm32.h"
 
 #define EOC_BIT 0x02
 #define SWSTART_BIT 0x00400000
-
-#ifndef CONSTEL_STM32_HDR
-#include "constel_stm32.h"
-#endif
 
 // Define  extra pins pins for trying/debugging. May be added to do_constel; will just run one time.
 void setup_io()
@@ -20,8 +17,8 @@ void setup_io()
   
   pinMode(TEST0, INPUT_PULLUP); // '0': use calibration defined with FIXED_...
   pinMode(TEST1, INPUT_PULLUP); // '0': fix calibration to last value
-
   pinMode(TEST2, INPUT_PULLUP); // '0': show numeric cal. values
+  pinMode(OVERL, INPUT_PULLUP); // '0': show numeric cal. values
   
   // Next is to change colour of the constellation diagram.
   pinMode(RGB_R, INPUT_PULLUP); // '0': Suppress red
@@ -43,6 +40,15 @@ void do_calibrate(CALIBRATE *calxy)
   calxy->y=((calxy->y)+calxy->xyoffset)*calxy->xyslope;
 }
 
+// Show calibration numbers
+static void show_numbers(CALIBRATE *calxy)
+{
+  str2oled(1,11,0xfff,(char *)"offs =%d  ",calxy->xyoffset);
+  str2oled(1, 9,0xfff,(char *)"slope=%.3f",calxy->xyslope);
+  str2oled(1, 7,0xfff,(char *)"xymin=%d  ",calxy->xymin);
+  str2oled(1, 5,0xfff,(char *)"xymax=%d  ",calxy->xymax);
+}
+
 void do_constel()
 {
   static CALIBRATE calxy;
@@ -53,6 +59,7 @@ void do_constel()
   bool freeze_cal=false;   // true: freeze current calibration
   bool show_cal=false;     // show calibration parameters on display
   bool cal_rdy=false;
+  bool add_overl=false;
 
   static bool clear=true;
   int rgb=0x0;
@@ -60,6 +67,7 @@ void do_constel()
   if (digitalRead(TEST0)) do_cal=true;      else do_cal=false;     // dynamic calibration or fixed
   if (digitalRead(TEST1)) freeze_cal=false; else freeze_cal=true;  // freeze calibration
   if (digitalRead(TEST2)) show_cal=false;   else show_cal=true;
+  if (digitalRead(OVERL)) add_overl=false;  else add_overl=true;
 
   if (digitalRead(RGB_R)) rgb|=0x4;
   if (digitalRead(RGB_G)) rgb|=0x2;
@@ -95,24 +103,19 @@ void do_constel()
         clear_displ();
         clear=false;
       }
-      str2oled(0,15,"Version=%s",VERSION);
-      str2oled(0,13,"%s",COPYRIGHT);
-      str2oled(1,7,"o=%d   ",calxy.xyoffset);
-      str2oled(1,5,"s=%f   ",calxy.xyslope);
-      str2oled(1,3,"xymin=%d  ",calxy.xymin);
-      str2oled(1,1,"xyman=%d  ",calxy.xymax);
+      show_numbers(&calxy);
     }
     else
     {
-      clear=true;             // prepare clear for next time 
+      clear=true;               // prepare clear for next time 
     }
   }
 
-  do_calibrate(&calxy);       // size constellation to screen
+  do_calibrate(&calxy);         // size constellation to screen
 
   // only show constel. diagram if calibration data not shown.
   if (!show_cal)
   {
-    coll_pix2oled(&calxy, integrlen, incval, rgb);
+    coll_pix2oled(&calxy, integrlen, incval, rgb, add_overl);
   }
 }
