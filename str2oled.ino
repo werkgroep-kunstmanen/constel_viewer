@@ -5,6 +5,7 @@
  *
  ****************************************************/
 #define UPSIDE_DOWN false
+
 /*************************************
  * ASCII bitmap for draw_rgbstring
  *************************************/
@@ -150,46 +151,72 @@ static int *rgb2wrd(int rgb)
   return word;
 }
 
-// Add string 'str' at pos. (x,y) on display
+// Add string 'str' at pos. (x,y) on display (x,y in pixels)
 static void add_str2arr(int x,int y,int rgb,char *str,bool flip)
 {
   char ts[150];
-  int fsize,ytxt,i,y0;
+  int fsize,ytxt,x0,y0;
   int xstr,ystr;
   int chnkpos;
   int *word;
   char line[128*2];
+
+  if (flip)
+  {
+    y=XY_SIZE-y-1;
+    x=XY_SIZE-1-x; 
+  }
+
   fsize=1;
   xstr=strlen(str)*8*fsize;
   ystr=8*fsize;
   word=rgb2wrd(rgb);
-  for (y0=0; y0<ystr; y0++)
+  for (y0=0; y0<ystr; y0++)             // vertical through 1 character
   {
-    int y1=y0;
-    if (!flip) y1=ystr-1-y0;
-    ytxt=(y1/fsize);
-    get_strline(str,ytxt,ts,190);
-    for (i=0; i<xstr; i++)
+    int xs,xe;
+    int x1,y1;
+    if (flip)
     {
-      int i1=i;
-      if (flip) i1=xstr-1-i;
-      if (ts[i1/fsize])
+      xs=x-xstr;
+      xe=x;
+      y1=y0;
+    }
+    else
+    {
+      xs=x;
+      xe=x+xstr;
+      y1=ystr-1-y0;
+    }
+
+    ytxt=(y1/fsize);
+    get_strline(str,ytxt,ts,190);       // str to line-of-pixels 'ts' for y0
+    for (x0=0; x0<xstr; x0++)           // horizontal through all pixels in ts
+    {
+      if (flip)
       {
-        line[i*2]  = word[0];//0xff;           // max. white
-        line[i*2+1]= word[1];//0xff;
+        x1=xstr-1-x0;
       }
       else
       {
-        line[i*2]=0x00;                        // black
-        line[i*2+1]=0x00;
+        x1=x0;
+      }
+      if (ts[x1/fsize])
+      {
+        line[2*x0]  = word[0];          // pixel 'on'
+        line[2*x0+1]= word[1];
+      }
+      else
+      {
+        line[2*x0]  =0x00;              // pixel 'off'
+        line[2*x0+1]=0x00;
       }
     }
-    write_cmdbyt2(0x15,x,x+xstr);              // set OLED start/end X               
-    write_cmdbyt2(0x75,y+y0,y+y0);             // set OLED start/end Y               
-    write_cmd(0x5C);                           //                                    
-    digitalWrite(SPI1_NSS_PIN, LOW);           // set CSN active for SPI transm.     
-    SPI.write(line,xstr*2);                    // transmit 1 line of 1 dot to OLED    
-    digitalWrite(SPI1_NSS_PIN, HIGH);          // set CSN inactive for SPI transm.   
+    write_cmdbyt2(0x15,xs,xe);          // set OLED start/end X               
+    write_cmdbyt2(0x75,y+y0,y+y0);      // set OLED start/end Y               
+    write_cmd(0x5C);                    //                                    
+    digitalWrite(SPI1_NSS_PIN, LOW);    // set CSN active for SPI transm.     
+    SPI.write(line,xstr*2);             // transmit 1 line of 1 dot to OLED    
+    digitalWrite(SPI1_NSS_PIN, HIGH);   // set CSN inactive for SPI transm.   
   }
 }
 
