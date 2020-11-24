@@ -97,3 +97,7 @@
       PA8	0: red off
       PA9	0: green off
       PA10	0: blue off
+
+      PA11	0: overlay red off
+      PA12	0: overlay green off
+      PA15	0: overlay blue off

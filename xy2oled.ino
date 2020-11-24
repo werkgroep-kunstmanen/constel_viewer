@@ -69,13 +69,13 @@ bool calc_cal_xy(CALIBRATE *calxy,bool freeze_cal)
 
 // Add overlay: cross
 // Add other overlays here!
-static void add_overlay(int x,int y,unsigned char *r,unsigned char *g,unsigned char *b)
+static void add_overlay(int x,int y,int rgb,unsigned char *r,unsigned char *g,unsigned char *b)
 {
   if ((x==SARR/2) || (y==SARR/2)) 
   {
-    *r=0x1f; // range=0..0x1f
-    *g=0x00; // range=0..0x3f
-    *b=0x00; // range=0..0x1f
+    if (rgb&4) *r=0x1f; else *r=0;
+    if (rgb&2) *g=0x3f; else *g=0;
+    if (rgb&1) *b=0x1f; else *b=0;
   }
 }
 
@@ -116,7 +116,7 @@ static void xyarr2oled(unsigned char *xyarr,int rgb,int add_overl)
         if (!(rgb&2)) g=0;
         if (!(rgb&1)) b=0;
 
-        if (add_overl) add_overlay(xx,yy,&r,&g,&b);
+        if (add_overl) add_overlay(xx,yy,rgb>>4,&r,&g,&b);
         
         word[0]=((b<<3)&0xf8) + ((g>>3)&0x07); // set LSByte word
         word[1]=((g<<5)&0xe0) + ((r&0x1f));    // set MSByte word

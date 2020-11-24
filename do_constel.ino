@@ -18,12 +18,17 @@ void setup_io()
   pinMode(TEST0, INPUT_PULLUP); // '0': use calibration defined with FIXED_...
   pinMode(TEST1, INPUT_PULLUP); // '0': fix calibration to last value
   pinMode(TEST2, INPUT_PULLUP); // '0': show numeric cal. values
-  pinMode(OVERL, INPUT_PULLUP); // '0': show numeric cal. values
+  pinMode(OVERL, INPUT_PULLUP); // '0': show overlay
   
   // Next is to change colour of the constellation diagram.
-  pinMode(RGB_R, INPUT_PULLUP); // '0': Suppress red
-  pinMode(RGB_G, INPUT_PULLUP); // '0': Suppress green
-  pinMode(RGB_B, INPUT_PULLUP); // '0': Suppress blue
+  pinMode(C_R, INPUT_PULLUP);   // '0': Suppress red
+  pinMode(C_G, INPUT_PULLUP);   // '0': Suppress green
+  pinMode(C_B, INPUT_PULLUP);   // '0': Suppress blue
+
+  // Next is to change colour of the cross in the constellation diagram.
+  pinMode(A_R, INPUT_PULLUP);   // '0': Suppress red
+  pinMode(A_G, INPUT_PULLUP);   // '0': Suppress green
+  pinMode(A_B, INPUT_PULLUP);   // '0': Suppress blue
   done=1;
 }
 
@@ -69,9 +74,15 @@ void do_constel()
   if (digitalRead(TEST2)) show_cal=false;   else show_cal=true;
   if (digitalRead(OVERL)) add_overl=false;  else add_overl=true;
 
-  if (digitalRead(RGB_R)) rgb|=0x4;
-  if (digitalRead(RGB_G)) rgb|=0x2;
-  if (digitalRead(RGB_B)) rgb|=0x1;
+  // set colour constellation diagram
+  if (digitalRead(C_R)) rgb|=0x04;
+  if (digitalRead(C_G)) rgb|=0x02;
+  if (digitalRead(C_B)) rgb|=0x01;
+
+  // set colour axis
+  if (digitalRead(A_R)) rgb|=0x40;
+  if (digitalRead(A_G)) rgb|=0x20;
+  if (digitalRead(A_B)) rgb|=0x10;
 
 
   (*ADC1_CR2) |= SWSTART_BIT;   // take new samples

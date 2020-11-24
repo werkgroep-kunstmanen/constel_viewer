@@ -25,10 +25,13 @@
 #define TEST0 PB12          // use cal. 'FIXED_xyoffset/FIXED_xyslope'
 #define TEST1 PB13          // fix calibration
 #define TEST2 PB14          // show numeric cal. values
-#define OVERL PB15
-#define RGB_R PA8
-#define RGB_G PA9
-#define RGB_B PA10
+#define OVERL PB15          // overlay on/off
+#define C_R   PA8           // constel. red
+#define C_G   PA9           // constel. green
+#define C_B   PA10          // constel. blue
+#define A_R   PA11          // axis red
+#define A_G   PA12          // axis green
+#define A_B   PA15          // axis blue
 
 
 // Values OLED
