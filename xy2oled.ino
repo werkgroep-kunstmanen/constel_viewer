@@ -61,7 +61,7 @@ bool calc_cal_xy(CALIBRATE *calxy,bool freeze_cal)
 
 // Collect/integrate (x,y) pairs
 // After integration: copy array content to OLED
-// Max. luminance is 31 (# bits for green: 5) (see LUM_MAX in header file)
+// Max. luminance is 63 (# bits for green: 6) (see LUM_MAX in header file)
 // Resol. 64x64 (128x128 too big for stm32f103)
 
 #define SARR 64                    // size mem: SARR x SARR (max. 128)
@@ -82,7 +82,7 @@ static void add_overlay(int x,int y,int rgb,unsigned char *r,unsigned char *g,un
 // Pixel at (x,y)
 // integrlen=# integration steps
 // incval = slope integration
-// note: LUMMAX reached after LUMMAX/incval steps.
+// note: LUM_MAX reached after LUM_MAX/incval steps.
 
 // Copy content xyarr to OLED
 // format: 2-bytes:
