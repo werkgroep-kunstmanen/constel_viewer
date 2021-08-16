@@ -31,7 +31,7 @@
 
  Steps to do:
  1. In your browser, go to: 
-      https://github.com/robalblas/constel_viewer
+      https://github.com/werkgroep-kunstmanen/constel_viewer
     Click on the green "Clone or download" (right-top).
     Choose "Download zip". 
 
