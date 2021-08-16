@@ -3,7 +3,7 @@
  This is software to create a constellation viewer using:
    . STM32_F103 Blue Pill board 
    . 128x128 OLED display with SPI interface
-   
+ Luminance variations are used to get a more attractive, 'scope-like' picture.
  
  Compile/upload environment.
  ---------------------------
