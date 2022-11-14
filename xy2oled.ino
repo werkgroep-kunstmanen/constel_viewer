@@ -143,7 +143,7 @@ void coll_pix2oled(CALIBRATE *calxy,int integrlen,int incval,int rgb,int add_ove
   y=calxy->y;
 
   // allocate mem for SARR x SARR pixels
-  if (xyarr==NULL) xyarr=(unsigned char *)malloc(SARR*SARR);
+  if (xyarr==NULL) xyarr=(unsigned char *)calloc(SARR,SARR);
 
   // size x,y to mem-size
   x/=DDSARR;
