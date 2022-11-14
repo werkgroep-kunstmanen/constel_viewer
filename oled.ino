@@ -63,6 +63,11 @@ void setup_oled()
   write_cmd(0xA0);              // colour depth: 65k
   write_byt(0x20);              //   
 
+  write_cmd(0xC1);              // set contrast RGB to max
+  write_byt(0xff);              // contrast A=blue  (def.: 0x8a)
+  write_byt(0xff);              // contrast B=green (def.: 0x51)
+  write_byt(0xff);              // contrast C=red   (def.: 0x8a)
+
   write_cmd(0xAF);              // Sleep mode OFF (Display ON)
   write_cmd(0x5C);              //
 }
