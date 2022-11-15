@@ -7,7 +7,7 @@
 #ifndef CONSTEL_STM32_HDR
 #define CONSTEL_STM32_HDR
 
-#define VERSION "2020.1"
+#define VERSION "2022.1"
 
 // Fixed calibration parameters
 #define FIXED_xyoffset -1850
